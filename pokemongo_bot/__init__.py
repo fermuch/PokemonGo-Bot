@@ -603,7 +603,19 @@ class PokemonGoBot(object):
 
         self._print_character_info()
 
-        self.api.activate_signature("encrypt.so")
+        # lookup for encrypt.(dll|so) and load it with the full path
+        possible_encrypt_libs = ["encrypt.dll", "encrypt.so"]
+        encrypt_lib = None
+        for lib in possible_encrypt_libs:
+            if os.path.isfile(lib):
+                encrypt_lib = os.path.abspath(lib)
+                break
+        if not encrypt_lib:
+            self.logger.error('Cannot find encrypt.so/encrypt.dll')
+            sys.exit(1)
+
+        self.logger.debug('Using encrypt lib: %s', encrypt_lib)
+        self.api.activate_signature(encrypt_lib)
         self.logger.info('')
         self.update_inventory()
         # send empty map_cells and then our position
